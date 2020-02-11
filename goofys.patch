@@ -1,0 +1,73 @@
+diff --git a/internal/goofys.go b/internal/goofys.go
+index 8ff0955..fb9cf20 100644
+--- a/internal/goofys.go
++++ b/internal/goofys.go
+@@ -683,7 +683,11 @@ func (fs *Goofys) insertInode(parent *Inode, inode *Inode) {
+ 		if inode.Id != 0 {
+ 			panic(fmt.Sprintf("inode id is set: %v %v", *inode.Name, inode.Id))
+ 		}
+-		inode.Id = fs.allocateInodeId()
++		// inode.Id = fs.allocateInodeId()
++        inode.Id = fuseops.InodeID(makeInodeID(*inode.FullName()))
++        fuseLog.Debugf("new inode %d", inode.Id)
++
++
+ 		addInode = true
+ 	}
+ 	parent.insertChildUnlocked(inode)
+diff --git a/internal/handles.go b/internal/handles.go
+index cffa7de..a798d8a 100644
+--- a/internal/handles.go
++++ b/internal/handles.go
+@@ -15,7 +15,7 @@
+ package internal
+ 
+ import (
+-	"fmt"
++	//"fmt"
+ 	"net/url"
+ 	"os"
+ 	"sort"
+@@ -246,7 +246,11 @@ func (inode *Inode) DeRef(n uint64) (stale bool) {
+ 	inode.logFuse("DeRef", n, inode.refcnt)
+ 
+ 	if inode.refcnt < n {
+-		panic(fmt.Sprintf("deref %v from %v", n, inode.refcnt))
++        inode.logFuse("Double DeRef race: (-%d from %d)", n, inode.refcnt)
++        inode.refcnt = 0
++        stale = true
++        return
++		// panic(fmt.Sprintf("deref %v from %v", n, inode.refcnt))
+ 	}
+ 
+ 	inode.refcnt -= n
+diff --git a/internal/utils.go b/internal/utils.go
+index 1a36b1d..fd8ace2 100644
+--- a/internal/utils.go
++++ b/internal/utils.go
+@@ -21,6 +21,7 @@ import (
+ 
+ 	"github.com/jacobsa/fuse"
+ 	"github.com/shirou/gopsutil/process"
++    "hash/fnv"
+ )
+ 
+ var TIME_MAX = time.Unix(1<<63-62135596801, 999999999)
+@@ -176,3 +177,10 @@ func GetTgid(pid uint32) (tgid *int32, err error) {
+ 	}
+ 	return &tgidVal, nil
+ }
++
++// use hash of name as inode modulo 2^63
++func makeInodeID(path string) uint64 {
++    hash := fnv.New64a()
++    hash.Write([]byte(path))
++    return hash.Sum64()
++}
+diff --git a/vendor/github.com/Azure/go-autorest b/vendor/github.com/Azure/go-autorest
+index d9a171c..9361dc4 160000
+--- a/vendor/github.com/Azure/go-autorest
++++ b/vendor/github.com/Azure/go-autorest
+@@ -1 +1 @@
+-Subproject commit d9a171ca366fd4acfaa99107cdc4f91877f3572e
++Subproject commit 9361dc46b0c5bd2c9ecfbc680c0758eff8baf429
