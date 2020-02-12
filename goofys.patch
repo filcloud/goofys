@@ -64,10 +64,3 @@ index 1a36b1d..fd8ace2 100644
 +    hash.Write([]byte(path))
 +    return hash.Sum64()
 +}
-diff --git a/vendor/github.com/Azure/go-autorest b/vendor/github.com/Azure/go-autorest
-index d9a171c..9361dc4 160000
---- a/vendor/github.com/Azure/go-autorest
-+++ b/vendor/github.com/Azure/go-autorest
-@@ -1 +1 @@
--Subproject commit d9a171ca366fd4acfaa99107cdc4f91877f3572e
-+Subproject commit 9361dc46b0c5bd2c9ecfbc680c0758eff8baf429

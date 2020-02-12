@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Copyright 2019-2020
+// modifed by StarfishStorage for persistent hash-based inode
 
 package internal
 
@@ -718,7 +720,11 @@ func (fs *Goofys) insertInode(parent *Inode, inode *Inode) {
 		if inode.Id != 0 {
 			panic(fmt.Sprintf("inode id is set: %v %v", *inode.Name, inode.Id))
 		}
-		inode.Id = fs.allocateInodeId()
+		// inode.Id = fs.allocateInodeId()
+        inode.Id = fuseops.InodeID(makeInodeID(*inode.FullName()))
+        fuseLog.Debugf("new inode %d", inode.Id)
+
+
 		addInode = true
 	}
 	parent.insertChildUnlocked(inode)

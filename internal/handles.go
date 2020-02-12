@@ -11,11 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Copyright 2019-2020
+// modifed by StarfishStorage for persistent hash-based inode
 
 package internal
 
 import (
-	"fmt"
+	//"fmt"
 	"net/url"
 	"os"
 	"sort"
@@ -262,7 +264,11 @@ func (inode *Inode) DeRef(n uint64) (stale bool) {
 	inode.logFuse("DeRef", n, inode.refcnt)
 
 	if inode.refcnt < n {
-		panic(fmt.Sprintf("deref %v from %v", n, inode.refcnt))
+        inode.logFuse("Double DeRef race: (-%d from %d)", n, inode.refcnt)
+        inode.refcnt = 0
+        stale = true
+        return
+		// panic(fmt.Sprintf("deref %v from %v", n, inode.refcnt))
 	}
 
 	inode.refcnt -= n

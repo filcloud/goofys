@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Copyright 2019-2020
+// modifed by StarfishStorage for persistent hash-based inode
 
 package internal
 
@@ -21,6 +23,7 @@ import (
 
 	"github.com/jacobsa/fuse"
 	"github.com/shirou/gopsutil/process"
+    "hash/fnv"
 )
 
 var TIME_MAX = time.Unix(1<<63-62135596801, 999999999)
@@ -178,4 +181,11 @@ func GetTgid(pid uint32) (tgid *int32, err error) {
 		return nil, err
 	}
 	return &tgidVal, nil
+}
+
+// use hash of name as inode modulo 2^63
+func makeInodeID(path string) uint64 {
+    hash := fnv.New64a()
+    hash.Write([]byte(path))
+    return hash.Sum64()
 }
