@@ -1,0 +1,17 @@
+
+Note, this is built using a go fetch and go built in ~/go/kahing/goofys. After fetching apply
+the patch with git apply then build and install and the go binary should be in ~/go/bin/goofys
+
+rename to sfs3
+
+url to fetch https://starfishdownloads.s3.amazonaws.com/sfs3
+
+To use, bucket credentials should be stored in /root/.aws/credentials
+For each bucket, something like the following is recommended (or uid=0, gid=0)
+example launch:
+sudo /usr/bin/goofys --profile starfish --uid=1001 --gid=1002 -o allow_other --dir-mode=0755 --file-mode=0644 sf-bigbucket /mnt/sf-bigbucket
+
+example /etc/fstab:
+goofys#sf-bigbucket     /mnt/sf-bigbucket       fuse    _netdev,allow_other,--profile=starfish,--uid=0,--gid
+=0 0    0
+
