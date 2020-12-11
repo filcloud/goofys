@@ -31,6 +31,9 @@ func Mount(
 		Options:                 flags.MountOptions,
 		ErrorLogger:             GetStdLogger(NewLogger("fuse"), logrus.ErrorLevel),
 		DisableWritebackCaching: true,
+		EnableSymlinkCaching: 	 true,
+		EnableNoOpenSupport:     true,
+		EnableNoOpendirSupport:  true,
 	}
 
 	if flags.DebugFuse {

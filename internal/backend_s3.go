@@ -365,12 +365,16 @@ func (s *S3Backend) HeadBlob(param *HeadBlobInput) (*HeadBlobOutput, error) {
 	if err != nil {
 		return nil, mapAwsError(err)
 	}
+	var contentLength int64
+	if resp.ContentLength != nil {
+		contentLength = *resp.ContentLength
+	}
 	return &HeadBlobOutput{
 		BlobItemOutput: BlobItemOutput{
 			Key:          &param.Key,
 			ETag:         resp.ETag,
 			LastModified: resp.LastModified,
-			Size:         uint64(*resp.ContentLength),
+			Size:         uint64(contentLength),
 			StorageClass: resp.StorageClass,
 		},
 		ContentType: resp.ContentType,
@@ -415,11 +419,16 @@ func (s *S3Backend) ListBlobs(param *ListBlobsInput) (*ListBlobsOutput, error) {
 		})
 	}
 
+	var isTruncated bool
+	if resp.IsTruncated != nil {
+		isTruncated = *resp.IsTruncated
+	}
+
 	return &ListBlobsOutput{
 		Prefixes:              prefixes,
 		Items:                 items,
 		NextContinuationToken: resp.NextContinuationToken,
-		IsTruncated:           *resp.IsTruncated,
+		IsTruncated:           isTruncated,
 		RequestId:             reqId,
 	}, nil
 }
@@ -740,13 +749,17 @@ func (s *S3Backend) GetBlob(param *GetBlobInput) (*GetBlobOutput, error) {
 		return nil, mapAwsError(err)
 	}
 
+	var contentLength int64
+	if resp.ContentLength != nil {
+		contentLength = *resp.ContentLength
+	}
 	return &GetBlobOutput{
 		HeadBlobOutput: HeadBlobOutput{
 			BlobItemOutput: BlobItemOutput{
 				Key:          &param.Key,
 				ETag:         resp.ETag,
 				LastModified: resp.LastModified,
-				Size:         uint64(*resp.ContentLength),
+				Size:         uint64(contentLength),
 				StorageClass: resp.StorageClass,
 			},
 			ContentType: resp.ContentType,
